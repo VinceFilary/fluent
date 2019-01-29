@@ -13,7 +13,7 @@ extension Model where Database: QuerySupporting {
     public func save(on conn: DatabaseConnectable) -> Future<Self> {
         return Self.query(on: conn).save(self)
     }
-
+    
     /// Saves this model as a new item in the database.
     /// This method can auto-generate an ID depending on ID type.
     ///
@@ -26,7 +26,7 @@ extension Model where Database: QuerySupporting {
     public func create(on conn: DatabaseConnectable) -> Future<Self> {
         return Self.query(on: conn).create(self)
     }
-
+    
     /// Updates the model. This requires that the model has its ID set.
     ///
     ///     user.update(on: req, originalID: 42)
@@ -38,7 +38,7 @@ extension Model where Database: QuerySupporting {
     public func update(on conn: DatabaseConnectable, originalID: ID? = nil) -> Future<Self> {
         return Self.query(on: conn).update(self, originalID: originalID)
     }
-
+    
     /// Deletes this model from the database. This requires that the model has its ID set.
     ///
     ///     user.delete(on: req)
@@ -73,25 +73,33 @@ extension Future where T: Model {
             return model.save(on: connectable)
         }
     }
-
+    
     /// See `Model`.
     public func create(on connectable: DatabaseConnectable) -> Future<T> {
         return self.flatMap(to: T.self) { (model) in
             return model.create(on: connectable)
         }
     }
-
+    
     /// See `Model`.
     public func update(on connectable: DatabaseConnectable) -> Future<T> {
         return self.flatMap(to: T.self) { (model) in
             return model.update(on: connectable)
         }
     }
-
+    
     /// See `Model`.
     public func delete(on connectable: DatabaseConnectable) -> Future<T> {
         return self.flatMap(to: T.self) { (model) in
             return model.delete(on: connectable).transform(to: model)
         }
+    }
+}
+
+extension Array where Element: Model {
+    
+    /// See `Model`.
+    public func save(on connectable: DatabaseConnectable) -> Future<[Element]> {
+        return Element.query(on: connectable).create(self)
     }
 }
